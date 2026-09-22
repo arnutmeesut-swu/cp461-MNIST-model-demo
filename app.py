@@ -21,7 +21,7 @@ if uploaded_file is not None:
     try:
         # Load the image
         img = Image.open(uploaded_file)
-        st.image(img, caption='Uploaded Image', use_column_width=True)
+        st.image(image, caption="Uploaded Image", width="stretch")
         st.write("")
         st.write("Classifying...")
 
