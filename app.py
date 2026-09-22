@@ -19,35 +19,38 @@ uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png
 
 if uploaded_file is not None:
     try:
-        # Load the image
+        # Load และแสดงรูปภาพ
         img = Image.open(uploaded_file)
-        st.image(img, caption="Uploaded Image", width="stretch")
-        st.write("")
-        st.write("Classifying...")
+        st.image(img, caption="Uploaded Image", use_container_width=True)
 
-        # Convert to grayscale
-        img = img.convert('L')
+        # ประมวลผลและทำนายผลด้วย st.spinner (จะซ่อนข้อความโหลดเมื่อทำงานเสร็จ)
+        with st.spinner("Classifying..."):
+            # Convert to grayscale
+            img_gray = img.convert("L")
 
-        # Resize to 28x28 pixels
-        img = img.resize((28, 28))
+            # Resize to 28x28 pixels
+            img_resized = img_gray.resize((28, 28))
 
-        # Convert to numpy array
-        img_array = np.array(img)
+            # Convert to numpy array
+            img_array = np.array(img_resized)
 
-        # Normalize pixel values to [0, 255] to [0, 1]
-        img_array = img_array.astype("float32") / 255.0
+            # Normalize pixel values [0, 255] -> [0, 1]
+            img_array = img_array.astype("float32") / 255.0
 
-        # Reshape for model prediction (add batch dimension)
-        img_array = img_array.reshape(1, 28, 28)
+            # Reshape (1, 28, 28) สำหรับส่งให้โมเดล
+            img_array = img_array.reshape(1, 28, 28)
 
-        # Make a prediction
-        prediction = model.predict(img_array)
+            # Make prediction
+            prediction = model.predict(img_array)
 
-        # Get the predicted digit
-        predicted_digit = np.argmax(prediction)
+            # ดึงตัวเลขที่มีความน่าจะเป็นสูงสุด และคำนวณ % ความมั่นใจ
+            predicted_digit = np.argmax(prediction)
+            confidence = np.max(prediction) * 100
 
-        st.success(f"The model predicts the digit is: **{predicted_digit}**")
+        # แสดงผลลัพธ์พร้อมความมั่นใจ (%)
+        st.success(
+            f"The model predicts the digit is: **{predicted_digit}** (Confidence: {confidence:.2f}%)"
+        )
 
     except Exception as e:
-        st.error(f"An error occurred during prediction: {e}. Please ensure the uploaded image is valid and the model is correctly loaded.")
-
+        st.error(f"An error occurred during prediction: {e}")
